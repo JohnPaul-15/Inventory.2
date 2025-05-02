@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inventory Management System</title>
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>
+tailwind.config={
+theme:{
+extend:{
+colors:{
+primary:'#4f46e5',
+secondary:'#10b981'
+},
+borderRadius:{
+'none':'0px',
+'sm':'4px',
+DEFAULT:'8px',
+'md':'12px',
+'lg':'16px',
+'xl':'20px',
+'2xl':'24px',
+'3xl':'32px',
+'full':'9999px',
+'button':'8px'
+}
+}
+}
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+<style>
+:where([class^="ri-"])::before { content: "\f3c2"; }
+body {
+font-family: 'Inter', sans-serif;
+background-color: #f9fafb;
+transition: opacity 0.3s ease-in-out;
+}
+.auth-card {
+box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+}
+.custom-checkbox {
+position: relative;
+padding-left: 30px;
+cursor: pointer;
+user-select: none;
+}
+.custom-checkbox input {
+position: absolute;
+opacity: 0;
+cursor: pointer;
+height: 0;
+width: 0;
+}
+.checkmark {
+position: absolute;
+top: 0;
+left: 0;
+height: 20px;
+width: 20px;
+background-color: #fff;
+border: 1px solid #d1d5db;
+border-radius: 4px;
+}
+.custom-checkbox:hover input ~ .checkmark {
+background-color: #f3f4f6;
+}
+.custom-checkbox input:checked ~ .checkmark {
+background-color: #4f46e5;
+border-color: #4f46e5;
+}
+.checkmark:after {
+content: "";
+position: absolute;
+display: none;
+}
+.custom-checkbox input:checked ~ .checkmark:after {
+display: block;
+}
+.custom-checkbox .checkmark:after {
+left: 7px;
+top: 3px;
+width: 6px;
+height: 10px;
+border: solid white;
+border-width: 0 2px 2px 0;
+transform: rotate(45deg);
+}
+.custom-switch {
+position: relative;
+display: inline-block;
+width: 48px;
+height: 24px;
+}
+.custom-switch input {
+opacity: 0;
+width: 0;
+height: 0;
+}
+.switch-slider {
+position: absolute;
+cursor: pointer;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background-color: #e5e7eb;
+transition: .4s;
+border-radius: 24px;
+}
+.switch-slider:before {
+position: absolute;
+content: "";
+height: 18px;
+width: 18px;
+left: 3px;
+bottom: 3px;
+background-color: white;
+transition: .4s;
+border-radius: 50%;
+}
+input:checked + .switch-slider {
+background-color: #4f46e5;
+}
+input:checked + .switch-slider:before {
+transform: translateX(24px);
+}
+.status-badge {
+padding: 4px 12px;
+border-radius: 9999px;
+font-size: 12px;
+font-weight: 500;
+}
+.status-available {
+background-color: #dcfce7;
+color: #166534;
+}
+.status-unavailable {
+background-color: #fee2e2;
+color: #991b1b;
+}
+.status-delivery {
+background-color: #fef3c7;
+color: #92400e;
+}
+.custom-select {
+appearance: none;
+background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+background-repeat: no-repeat;
+background-position: right 0.5rem center;
+background-size: 1.5em 1.5em;
+}
+.tab-active {
+color: #4f46e5;
+border-bottom: 2px solid #4f46e5;
+}
+</style>
+</head>
+<body>
+<div id="auth-page" class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+<div class="auth-card max-w-md w-full bg-white rounded-lg p-8">
+<div class="text-center mb-8">
+<h1 class="font-['Pacifico'] text-3xl text-gray-800">logo</h1>
+<h2 class="mt-4 text-2xl font-bold text-gray-900">Sign in to your account</h2>
+<div class="mt-3 flex justify-center gap-4">
+<button id="user-tab" class="px-4 py-2 tab-active">User</button>
+<button id="admin-tab" class="px-4 py-2 text-gray-500">Admin</button>
+</div>
+</div>
+<form id="login-form" class="space-y-6">
+<div>
+<label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
+<div class="mt-1 relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<div class="w-5 h-5 flex items-center justify-center text-gray-400">
+<i class="ri-mail-line"></i>
+</div>
+</div>
+<input id="email" name="email" type="email" autocomplete="email" required class="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary text-sm" placeholder="you@example.com">
+</div>
+</div>
+<div>
+<label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+<div class="mt-1 relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<div class="w-5 h-5 flex items-center justify-center text-gray-400">
+<i class="ri-lock-line"></i>
+</div>
+</div>
+<input id="password" name="password" type="password" autocomplete="current-password" required class="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary text-sm" placeholder="••••••••">
+</div>
+</div>
+<div class="flex items-center justify-between">
+<label class="custom-checkbox text-sm text-gray-700">
+Remember me
+<input type="checkbox">
+<span class="checkmark"></span>
+</label>
+<a href="#" class="text-sm font-medium text-primary hover:text-primary/80">Forgot password?</a>
+</div>
+<div>
+<button type="submit" id="sign-in-button" class="w-full flex justify-center py-2 px-4 border border-transparent !rounded-button shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed">
+<span class="flex items-center">
+<span id="sign-in-text">Sign in</span>
+<span id="sign-in-spinner" class="hidden ml-2">
+<i class="ri-loader-4-line animate-spin"></i>
+</span>
+</span>
+</button>
+<div id="sign-in-error" class="hidden mt-2 text-sm text-red-600"></div>
+</div>
+</form>
+<div class="mt-6 text-center">
+<p class="text-sm text-gray-600">
+Don't have an account?
+<a href="#" id="register-link" class="font-medium text-primary hover:text-primary/80">Register now</a>
+</p>
+</div>
+</div>
+</div>
+<div id="register-page" class="hidden min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+<div class="auth-card max-w-md w-full bg-white rounded-lg p-8">
+<div class="text-center mb-8">
+<h1 class="font-['Pacifico'] text-3xl text-gray-800">logo</h1>
+<h2 class="mt-4 text-2xl font-bold text-gray-900">Create your account</h2>
+</div>
+<form id="register-form" class="space-y-6">
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label for="first-name" class="block text-sm font-medium text-gray-700">First name</label>
+<input id="first-name" name="first-name" type="text" required class="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary text-sm">
+</div>
+<div>
+<label for="last-name" class="block text-sm font-medium text-gray-700">Last name</label>
+<input id="last-name" name="last-name" type="text" required class="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary text-sm">
+</div>
+</div>
+<div>
+<label for="reg-email" class="block text-sm font-medium text-gray-700">Email address</label>
+<input id="reg-email" name="email" type="email" autocomplete="email" required class="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary text-sm">
+</div>
+<div>
+<label for="reg-password" class="block text-sm font-medium text-gray-700">Password</label>
+<input id="reg-password" name="password" type="password" required class="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary text-sm">
+</div>
+<div>
+<label for="confirm-password" class="block text-sm font-medium text-gray-700">Confirm password</label>
+<input id="confirm-password" name="confirm-password" type="password" required class="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary text-sm">
+</div>
+<div>
+<button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent !rounded-button shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary whitespace-nowrap">Register</button>
+</div>
+</form>
+<div class="mt-6 text-center">
+<p class="text-sm text-gray-600">
+Already have an account?
+<a href="#" id="login-link" class="font-medium text-primary hover:text-primary/80">Sign in</a>
+</p>
+</div>
+</div>
+</div>
+<div id="user-dashboard" class="hidden min-h-screen bg-gray-50">
+<header class="bg-white shadow">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex justify-between h-16">
+<div class="flex items-center">
+<h1 class="font-['Pacifico'] text-2xl text-gray-800">logo</h1>
+</div>
+<div class="flex items-center">
+<div class="flex items-center space-x-4">
+<div class="relative">
+<button id="user-menu-button" class="flex items-center space-x-2 text-gray-700 hover:text-gray-900 focus:outline-none">
+<img class="h-8 w-8 rounded-full object-cover" src="https://readdy.ai/api/search-image?query=professional%20headshot%20of%20a%20young%20person%20with%20a%20friendly%20smile%2C%20high%20quality%20portrait%20photo%2C%20clean%20background&width=100&height=100&seq=user123&orientation=squarish" alt="User profile">
+<span class="text-sm font-medium">Michael Anderson</span>
+<div class="w-4 h-4 flex items-center justify-center">
+<i class="ri-arrow-down-s-line"></i>
+</div>
+</button>
+<div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+<a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Your Profile</a>
+<a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
+<a href="#" id="user-logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign out</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+<div class="px-4 sm:px-0">
+<div class="border-b border-gray-200">
+<nav class="-mb-px flex space-x-8">
+<button class="user-tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-primary text-sm font-medium text-primary" data-tab="borrow">Borrow Items</button>
+<button class="user-tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="current">Currently Borrowed</button>
+<button class="user-tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="history">History</button>
+<button class="user-tab-btn whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="profile">Profile</button>
+</nav>
+</div>
+<div id="borrow-tab" class="user-tab-content py-6">
+<div class="mb-6">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-lg font-medium text-gray-900">Available Items</h2>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<div class="w-5 h-5 flex items-center justify-center text-gray-400">
+<i class="ri-search-line"></i>
+</div>
+</div>
+<input type="text" class="pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary text-sm" placeholder="Search items...">
+</div>
+</div>
+<div class="bg-white shadow overflow-hidden rounded-md">
+<ul class="divide-y divide-gray-200">
+<li>
+<div class="px-6 py-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<div class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-md text-gray-500">
+<i class="ri-computer-line ri-lg"></i>
+</div>
+<div class="ml-4">
+<h3 class="text-sm font-medium text-gray-900">Laptop - Dell XPS 15</h3>
+<p class="text-xs text-gray-500">Available: 12 units</p>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<div>
+<label for="quantity-1" class="sr-only">Quantity</label>
+<input id="quantity-1" type="number" min="1" max="12" value="1" class="w-16 py-1 px-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-primary focus:border-primary">
+</div>
+<button class="borrow-btn inline-flex items-center px-3 py-1.5 border border-transparent !rounded-button text-xs font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary whitespace-nowrap">
+Borrow
+</button>
+</div>
+</div>
+</div>
+</li>
+<li>
+<div class="px-6 py-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<div class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-md text-gray-500">
+<i class="ri-projector-line ri-lg"></i>
+</div>
+<div class="ml-4">
+<h3 class="text-sm font-medium text-gray-900">Projector - Epson PowerLite</h3>
+<p class="text-xs text-gray-500">Available: 5 units</p>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<div>
+<label for="quantity-2" class="sr-only">Quantity</label>
+<input id="quantity-2" type="number" min="1" max="5" value="1" class="w-16 py-1 px-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-primary focus:border-primary">
+</div>
+<button class="borrow-btn inline-flex items-center px-3 py-1.5 border border-transparent !rounded-button text-xs font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary whitespace-nowrap">
+Borrow
+</button>
+</div>
+</div>
+</div>
+</li>
+<li>
+<div class="px-6 py-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<div class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-md text-gray-500">
+<i class="ri-speaker-line ri-lg"></i>
+</div>
+<div class="ml-4">
+<h3 class="text-sm font-medium text-gray-900">Bluetooth Speaker - JBL Flip 5</h3>
+<p class="text-xs text-gray-500">Available: 8 units</p>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<div>
+<label for="quantity-3" class="sr-only">Quantity</label>
+<input id="quantity-3" type="number" min="1" max="8" value="1" class="w-16 py-1 px-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-primary focus:border-primary">
+</div>
+<button class="borrow-btn inline-flex items-center px-3 py-1.5 border border-transparent !rounded-button text-xs font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary whitespace-nowrap">
+Borrow
+</button>
+</div>
+</div>
+</div>
+</li>
+<li>
+<div class="px-6 py-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<div class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-md text-gray-500">
+<i class="ri-camera-line ri-lg"></i>
+</div>
+<div class="ml-4">
+<h3 class="text-sm font-medium text-gray-900">Digital Camera - Canon EOS</h3>
+<p class="text-xs text-gray-500">Available: 3 units</p>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<div>
+<label for="quantity-4" class="sr-only">Quantity</label>
+<input id="quantity-4" type="number" min="1" max="3" value="1" class="w-16 py-1 px-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-primary focus:border-primary">
+</div>
+<button class="borrow-btn inline-flex items-center px-3 py-1.5 border border-transparent !rounded-button text-xs font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary whitespace-nowrap">
+Borrow
+</button>
+</div>
+</div>
+</div>
+</li>
+<li>
+<div class="px-6 py-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<div class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-md text-gray-500">
+<i class="ri-headphone-line ri-lg"></i>
+</div>
+<div class="ml-4">
+<h3 class="text-sm font-medium text-gray-900">Headphones - Sony WH-1000XM4</h3>
+<p class="text-xs text-gray-500">Available: 10 units</p>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<div>
+<label for="quantity-5" class="sr-only">Quantity</label>
+<input id="quantity-5" type="number" min="1" max="10" value="1" class="w-16 py-1 px-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-primary focus:border-primary">
+</div>
+<button class="borrow-btn inline-flex items-center px-3 py-1.5 border border-transparent !rounded-button text-xs font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary whitespace-nowrap">
+Borrow
+</button>
+</div>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="current-tab" class="user-tab-content hidden py-6">
+<h2 class="text-lg font-medium text-gray-900 mb-4">Currently Borrowed Items</h2>
+<div class="bg-white shadow overflow-hidden rounded-md">
+<ul class="divide-y divide-gray-200">
+<li>
+<div class="px-6 py-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<div class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-md text-gray-500">
+<i class="ri-projector-line ri-lg"></i>
+</div>
+<div class="ml-4">
+<h3 class="text-sm font-medium text-gray-900">Projector - Epson PowerLite</h3>
+<p class="text-xs text-gray-500">Borrowed: April 20, 2025 (2 units)</p>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<div>
+<label for="return-quantity-1" class="sr-only">Return Quantity</label>
+<input id="return-quantity-1" type="number" min="1" max="2" value="2" class="w-16 py-1 px-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-primary focus:border-primary">
+</div>
+<button class="return-btn inline-flex items-center px-3 py-1.5 border border-transparent !rounded-button text-xs font-medium text-white bg-secondary hover:bg-secondary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary whitespace-nowrap">
+Return
+</button>
+</div>
+</div>
+</div>
+</li>
+<li>
+<div class="px-6 py-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<div class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-md text-gray-500">
+<i class="ri-headphone-line ri-lg"></i>
+</div>
+<div class="ml-4">
+<h3 class="text-sm font-medium text-gray-900">Headphones - Sony WH-1000XM4</h3>
+<p class="text-xs text-gray-500">Borrowed: April 22, 2025 (1 unit)</p>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<div>
+<label for="return-quantity-2" class="sr-only">Return Quantity</label>
+<input id="return-quantity-2" type="number" min="1" max="1" value="1" class="w-16 py-1 px-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-primary focus:border-primary">
+</div>
+<button class="return-btn inline-flex items-center px-3 py-1.5 border border-transparent !rounded-button text-xs font-medium text-white bg-secondary hover:bg-secondary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary whitespace-nowrap">
+Return
+</button>
+</div>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div id="history-tab" class="user-tab-content hidden py-6">
+<h2 class="text-lg font-medium text-gray-900 mb-4">Borrowing History</h2>
+<div class="bg-white shadow overflow-hidden rounded-md">
+<table class="min-w-full divide-y divide-gray-200">
+<thead class="bg-gray-50">
+<tr>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Borrowed Date</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Returned Date</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+</tr>
+</thead>
+<tbody class="bg-white divide-y divide-gray-200">
+<tr>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Laptop - Dell XPS 15</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">April 10, 2025</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">April 15, 2025</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="status-badge status-available">Returned</span>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Digital Camera - Canon EOS</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">March 25, 2025</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">April 5, 2025</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="status-badge status-available">Returned</span>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Bluetooth Speaker - JBL Flip 5</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">March 15, 2025</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">March 22, 2025</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="status-badge status-available">Returned</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="profile-tab" class="user-tab-content hidden py-6">
+<div class="md:grid md:grid-cols-3 md:gap-6">
+<div class="md:col-span-1">
+<div class="px-4 sm:px-0">
+<h3 class="text-lg font-medium leading-6 text-gray-900">Profile</h3>
+<p class="mt-1 text-sm text-gray-600">This information will be displayed publicly so be careful what you share.</p>
+</div>
+</div>
+<div class="mt-5 md:mt-0 md:col-span-2">
+<form action="#" method="POST">
+<div class="shadow sm:rounded-md sm:overflow-hidden">
+<div class="px-4 py-5 bg-white space-y-6 sm:p-6">
+<div class="grid grid-cols-6 gap-6">
+<div class="col-span-6 sm:col-span-3">
+<label for="first-name" class="block text-sm font-medium text-gray-700">First name</label>
+<input type="text" name="first-name" id="profile-first-name" autocomplete="given-name" value="Michael" class="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+</div>
+<div class="col-span-6 sm:col-span-3">
+<label for="last-name" class="block text-sm font-medium text-gray-700">Last name</label>
+<input type="text" name="last-name" id="profile-last-name" autocomplete="family-name" value="Anderson" class="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+</div>
+<div class="col-span-6 sm:col-span-4">
+<label for="email-address" class="block text-sm font-medium text-gray-700">Email address</label>
+<input type="text" name="email-address" id="email-address" autocomplete="email" value="michael.anderson@example.com" class="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+</div>
+<div class="col-span-6 sm:col-span-3">
+<label for="department" class="block text-sm font-medium text-gray-700">Department</label>
+<select id="department" name="department" autocomplete="department" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm pr-8">
+<option selected>Computer Science</option>
+<option>Engineering</option>
+<option>Business Administration</option>
+<option>Education</option>
+<option>Arts and Sciences</option>
+</select>
+</div>
+<div class="col-span-6 sm:col-span-3">
+<label for="phone-number" class="block text-sm font-medium text-gray-700">Phone number</label>
+<input type="text" name="phone-number" id="phone-number" autocomplete="tel" value="+1 (555) 123-4567" class="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700">Photo</label>
+<div class="mt-1 flex items-center">
+<span class="inline-block h-12 w-12 rounded-full overflow-hidden bg-gray-100">
+<img src="https://readdy.ai/api/search-image?query=professional%20headshot%20of%20a%20young%20person%20with%20a%20friendly%20smile%2C%20high%20quality%20portrait%20photo%2C%20clean%20background&width=100&height=100&seq=user123&orientation=squarish" alt="User profile">
+</span>
+<button type="button" class="ml-5 bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary whitespace-nowrap">
+Change
+</button>
+</div>
+</div>
+</div>
+<div class="px-4 py-3 bg-gray-50 text-right sm:px-6">
+<button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary whitespace-nowrap">
+Save
+</button>
+</div>
+</div>
+</form>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<div id="admin-dashboard" class="hidden min-h-screen bg-gray-50 flex">
+<div class="w-64 bg-white shadow-md z-10">
+<div class="p-4 border-b">
+<h1 class="font-['Pacifico'] text-2xl text-gray-800">logo</h1>
+<p class="text-xs text-gray-500 mt-1">Admin Dashboard</p>
+</div>
+<nav class="mt-5">
+<a href="#" class="admin-nav-link flex items-center px-4 py-3 text-sm font-medium text-primary bg-primary/5" data-tab="inventory">
+<div class="w-5 h-5 flex items-center justify-center mr-3">
+<i class="ri-store-2-line"></i>
+</div>
+Inventory Management
+</a>
+<a href="#" class="admin-nav-link flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50" data-tab="users">
+<div class="w-5 h-5 flex items-center justify-center mr-3">
+<i class="ri-user-line"></i>
+</div>
+User Management
+</a>
+<a href="#" class="admin-nav-link flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50" data-tab="requests">
+<div class="w-5 h-5 flex items-center justify-center mr-3">
+<i class="ri-file-list-line"></i>
+</div>
+Borrow Requests
+</a>
+<a href="#" class="admin-nav-link flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50" data-tab="reports">
+<div class="w-5 h-5 flex items-center justify-center mr-3">
+<i class="ri-bar-chart-line"></i>
+</div>
+Reports
+</a>
+<a href="#" class="admin-nav-link flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50" data-tab="settings">
+<div class="w-5 h-5 flex items-center justify-center mr-3">
+<i class="ri-settings-line"></i>
+</div>
+Settings
+</a>
+</nav>
+</div>
+<div class="flex-1 flex flex-col">
+<header class="bg-white shadow-sm z-10">
+<div class="flex justify-between items-center h-16 px-6">
+<div>
+<h1 class="text-lg font-medium text-gray-900">Inventory Management</h1>
+</div>
+<div class="flex items-center">
+<div class="relative">
+<button id="admin-menu-button" class="flex items-center space-x-2 text-gray-700 hover:text-gray-900 focus:outline-none">
+<img class="h-8 w-8 rounded-full object-cover" src="https://readdy.ai/api/search-image?query=professional%20headshot%20of%20a%20middle-aged%20person%20with%20glasses%2C%20high%20quality%20portrait%20photo%2C%20clean%20background&width=100&height=100&seq=admin123&orientation=squarish" alt="Admin profile">
+<span class="text-sm font-medium">Admin User</span>
+<div class="w-4 h-4 flex items-center justify-center">
+<i class="ri-arrow-down-s-line"></i>
+</div>
+</button>
+<div id="admin-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+<a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Your Profile</a>
+<a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
+<a href="#" id="admin-logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign out</a>
+</div>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-1 overflow-auto p-6">
+<div id="inventory-tab" class="admin-tab-content">
+<div class="mb-6 flex justify-between items-center">
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<div class="w-5 h-5 flex items-center justify-center text-gray-400">
+<i class="ri-search-line"></i>
+</div>
+</div>
+<input type="text" placeholder="Search inventory..." class="pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary text-sm">
+</div>
+<button id="add-item-btn" class="inline-flex items-center px-4 py-2 border border-transparent !rounded-button shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary whitespace-nowrap">
+<div class="w-5 h-5 flex items-center justify-center mr-2">
+<i class="ri-add-line"></i>
+</div>
+Add New Item
+</button>
+</div>
+<div class="bg-white shadow overflow-hidden rounded-md">
+<table class="min-w-full divide-y divide-gray-200">
+<thead class="bg-gray-50">
+<tr>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CHED Request</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">On Hand</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Borrowed</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Available</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+</tr>
+</thead>
+<tbody class="bg-white divide-y divide-gray-200">
+<tr>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center">
+<div class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-md text-gray-500">
+<i class="ri-computer-line"></i>
+</div>
+<div class="ml-4">
+<div class="text-sm font-medium text-gray-900">Laptop - Dell XPS 15</div>
+<div class="text-sm text-gray-500">ID: ITEM-001</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Computer Science</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">15</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="status-badge status-available">Available</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">3</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">12</td>
+<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+<div class="flex space-x-2">
+<button class="edit-item-btn text-primary hover:text-primary/80">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-pencil-line"></i>
+</div>
+</button>
+<button class="delete-item-btn text-red-600 hover:text-red-800">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-delete-bin-line"></i>
+</div>
+</button>
+</div>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center">
+<div class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-md text-gray-500">
+<i class="ri-projector-line"></i>
+</div>
+<div class="ml-4">
+<div class="text-sm font-medium text-gray-900">Projector - Epson PowerLite</div>
+<div class="text-sm text-gray-500">ID: ITEM-002</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Engineering</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">8</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="status-badge status-available">Available</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">3</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">5</td>
+<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+<div class="flex space-x-2">
+<button class="edit-item-btn text-primary hover:text-primary/80">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-pencil-line"></i>
+</div>
+</button>
+<button class="delete-item-btn text-red-600 hover:text-red-800">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-delete-bin-line"></i>
+</div>
+</button>
+</div>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center">
+<div class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-md text-gray-500">
+<i class="ri-speaker-line"></i>
+</div>
+<div class="ml-4">
+<div class="text-sm font-medium text-gray-900">Bluetooth Speaker - JBL Flip 5</div>
+<div class="text-sm text-gray-500">ID: ITEM-003</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Arts and Sciences</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">12</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="status-badge status-available">Available</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">4</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">8</td>
+<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+<div class="flex space-x-2">
+<button class="edit-item-btn text-primary hover:text-primary/80">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-pencil-line"></i>
+</div>
+</button>
+<button class="delete-item-btn text-red-600 hover:text-red-800">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-delete-bin-line"></i>
+</div>
+</button>
+</div>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center">
+<div class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-md text-gray-500">
+<i class="ri-camera-line"></i>
+</div>
+<div class="ml-4">
+<div class="text-sm font-medium text-gray-900">Digital Camera - Canon EOS</div>
+<div class="text-sm text-gray-500">ID: ITEM-004</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Arts and Sciences</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">5</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="status-badge status-available">Available</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">3</td>
+<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+<div class="flex space-x-2">
+<button class="edit-item-btn text-primary hover:text-primary/80">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-pencil-line"></i>
+</div>
+</button>
+<button class="delete-item-btn text-red-600 hover:text-red-800">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-delete-bin-line"></i>
+</div>
+</button>
+</div>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center">
+<div class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-md text-gray-500">
+<i class="ri-headphone-line"></i>
+</div>
+<div class="ml-4">
+<div class="text-sm font-medium text-gray-900">Headphones - Sony WH-1000XM4</div>
+<div class="text-sm text-gray-500">ID: ITEM-005</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Computer Science</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">15</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="status-badge status-available">Available</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">5</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">10</td>
+<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+<div class="flex space-x-2">
+<button class="edit-item-btn text-primary hover:text-primary/80">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-pencil-line"></i>
+</div>
+</button>
+<button class="delete-item-btn text-red-600 hover:text-red-800">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-delete-bin-line"></i>
+</div>
+</button>
+</div>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center">
+<div class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-md text-gray-500">
+<i class="ri-tablet-line"></i>
+</div>
+<div class="ml-4">
+<div class="text-sm font-medium text-gray-900">Tablet - iPad Pro</div>
+<div class="text-sm text-gray-500">ID: ITEM-006</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Education</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">10</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="status-badge status-available">Available</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">6</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">4</td>
+<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+<div class="flex space-x-2">
+<button class="edit-item-btn text-primary hover:text-primary/80">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-pencil-line"></i>
+</div>
+</button>
+<button class="delete-item-btn text-red-600 hover:text-red-800">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-delete-bin-line"></i>
+</div>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="users-tab" class="admin-tab-content hidden">
+<h2 class="text-lg font-medium text-gray-900 mb-4">User Management</h2>
+<div class="bg-white shadow overflow-hidden rounded-md">
+<table class="min-w-full divide-y divide-gray-200">
+<thead class="bg-gray-50">
+<tr>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items Borrowed</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+</tr>
+</thead>
+<tbody class="bg-white divide-y divide-gray-200">
+<tr>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center">
+<div class="h-10 w-10 rounded-full overflow-hidden">
+<img src="https://readdy.ai/api/search-image?query=professional%20headshot%20of%20a%20young%20person%20with%20a%20friendly%20smile%2C%20high%20quality%20portrait%20photo%2C%20clean%20background&width=100&height=100&seq=user123&orientation=squarish" alt="User profile">
+</div>
+<div class="ml-4">
+<div class="text-sm font-medium text-gray-900">Michael Anderson</div>
+<div class="text-sm text-gray-500">ID: USER-001</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">michael.anderson@example.com</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Computer Science</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">3</td>
+<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+<div class="flex space-x-2">
+<button class="view-user-btn text-primary hover:text-primary/80">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-eye-line"></i>
+</div>
+</button>
+<button class="edit-user-btn text-primary hover:text-primary/80">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-pencil-line"></i>
+</div>
+</button>
+</div>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center">
+<div class="h-10 w-10 rounded-full overflow-hidden">
+<img src="https://readdy.ai/api/search-image?query=professional%20headshot%20of%20a%20young%20woman%20with%20long%20hair%2C%20high%20quality%20portrait%20photo%2C%20clean%20background&width=100&height=100&seq=user456&orientation=squarish" alt="User profile">
+</div>
+<div class="ml-4">
+<div class="text-sm font-medium text-gray-900">Sarah Johnson</div>
+<div class="text-sm text-gray-500">ID: USER-002</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">sarah.johnson@example.com</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Engineering</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1</td>
+<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+<div class="flex space-x-2">
+<button class="view-user-btn text-primary hover:text-primary/80">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-eye-line"></i>
+</div>
+</button>
+<button class="edit-user-btn text-primary hover:text-primary/80">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-pencil-line"></i>
+</div>
+</button>
+</div>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center">
+<div class="h-10 w-10 rounded-full overflow-hidden">
+<img src="https://readdy.ai/api/search-image?query=professional%20headshot%20of%20a%20man%20with%20glasses%2C%20high%20quality%20portrait%20photo%2C%20clean%20background&width=100&height=100&seq=user789&orientation=squarish" alt="User profile">
+</div>
+<div class="ml-4">
+<div class="text-sm font-medium text-gray-900">David Wilson</div>
+<div class="text-sm text-gray-500">ID: USER-003</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">david.wilson@example.com</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Business Administration</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">0</td>
+<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+<div class="flex space-x-2">
+<button class="view-user-btn text-primary hover:text-primary/80">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-eye-line"></i>
+</div>
+</button>
+<button class="edit-user-btn text-primary hover:text-primary/80">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-pencil-line"></i>
+</div>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="requests-tab" class="admin-tab-content hidden">
+<h2 class="text-lg font-medium text-gray-900 mb-4">Borrow Requests</h2>
+<div class="bg-white shadow overflow-hidden rounded-md">
+<table class="min-w-full divide-y divide-gray-200">
+<thead class="bg-gray-50">
+<tr>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CHED Request</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Request Date</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+</tr>
+</thead>
+<tbody class="bg-white divide-y divide-gray-200">
+<tr>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center">
+<div class="h-8 w-8 rounded-full overflow-hidden">
+<img src="https://readdy.ai/api/search-image?query=professional%20headshot%20of%20a%20young%20person%20with%20a%20friendly%20smile%2C%20high%20quality%20portrait%20photo%2C%20clean%20background&width=100&height=100&seq=user123&orientation=squarish" alt="User profile">
+</div>
+<div class="ml-3 text-sm font-medium text-gray-900">Michael Anderson</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Laptop - Dell XPS 15</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Computer Science</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">April 26, 2025</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="status-badge status-delivery">Pending</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+<div class="flex space-x-2">
+<button class="approve-btn text-green-600 hover:text-green-800">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-check-line"></i>
+</div>
+</button>
+<button class="reject-btn text-red-600 hover:text-red-800">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-close-line"></i>
+</div>
+</button>
+</div>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center">
+<div class="h-8 w-8 rounded-full overflow-hidden">
+<img src="https://readdy.ai/api/search-image?query=professional%20headshot%20of%20a%20young%20woman%20with%20long%20hair%2C%20high%20quality%20portrait%20photo%2C%20clean%20background&width=100&height=100&seq=user456&orientation=squarish" alt="User profile">
+</div>
+<div class="ml-3 text-sm font-medium text-gray-900">Sarah Johnson</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Projector - Epson PowerLite</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Engineering</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">April 25, 2025</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="status-badge status-delivery">Pending</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+<div class="flex space-x-2">
+<button class="approve-btn text-green-600 hover:text-green-800">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-check-line"></i>
+</div>
+</button>
+<button class="reject-btn text-red-600 hover:text-red-800">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-close-line"></i>
+</div>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="reports-tab" class="admin-tab-content hidden">
+<h2 class="text-lg font-medium text-gray-900 mb-4">Reports</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="bg-white p-6 rounded-lg shadow">
+<h3 class="text-base font-medium text-gray-900 mb-4">Items Borrowed by Department</h3>
+<div id="department-chart" class="h-80"></div>
+</div>
+<div class="bg-white p-6 rounded-lg shadow">
+<h3 class="text-base font-medium text-gray-900 mb-4">Most Borrowed Items</h3>
+<div id="items-chart" class="h-80"></div>
+</div>
+</div>
+</div>
+<div id="settings-tab" class="admin-tab-content hidden">
+<h2 class="text-lg font-medium text-gray-900 mb-4">Settings</h2>
+<div class="bg-white shadow overflow-hidden rounded-md">
+<div class="px-4 py-5 sm:p-6">
+<div class="space-y-6">
+<div>
+<h3 class="text-base font-medium text-gray-900">Email Notifications</h3>
+<div class="mt-4 space-y-4">
+<div class="flex items-center justify-between">
+<label class="text-sm text-gray-700">Send email when item is borrowed</label>
+<label class="custom-switch">
+<input type="checkbox" checked>
+<span class="switch-slider"></span>
+</label>
+</div>
+<div class="flex items-center justify-between">
+<label class="text-sm text-gray-700">Send email when item is returned</label>
+<label class="custom-switch">
+<input type="checkbox" checked>
+<span class="switch-slider"></span>
+</label>
+</div>
+<div class="flex items-center justify-between">
+<label class="text-sm text-gray-700">Send reminder for overdue items</label>
+<label class="custom-switch">
+<input type="checkbox" checked>
+<span class="switch-slider"></span>
+</label>
+</div>
+</div>
+</div>
+<div class="pt-5 border-t border-gray-200">
+<h3 class="text-base font-medium text-gray-900">System Settings</h3>
+<div class="mt-4 space-y-4">
+<div>
+<label for="max-borrow-days" class="block text-sm font-medium text-gray-700">Maximum borrowing period (days)</label>
+<input type="number" id="max-borrow-days" class="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" value="14">
+</div>
+<div>
+<label for="max-items" class="block text-sm font-medium text-gray-700">Maximum items per user</label>
+<input type="number" id="max-items" class="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm" value="5">
+</div>
+</div>
+</div>
+</div>
+<div class="pt-5 mt-5 border-t border-gray-200">
+<div class="flex justify-end">
+<button type="button" class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary whitespace-nowrap">
+Cancel
+</button>
+<button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent !rounded-button shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary whitespace-nowrap">
+Save Changes
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+<div id="add-item-modal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+<div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+<div class="fixed inset-0 transition-opacity" aria-hidden="true">
+<div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+</div>
+<span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+<div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+<div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+<div class="sm:flex sm:items-start">
+<div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+<h3 class="text-lg leading-6 font-medium text-gray-900">Add New Item</h3>
+<div class="mt-4">
+<form id="add-item-form" class="space-y-4">
+<div>
+<label for="item-name" class="block text-sm font-medium text-gray-700">Item Name</label>
+<input type="text" name="item-name" id="item-name" class="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+</div>
+<div>
+<label for="item-category" class="block text-sm font-medium text-gray-700">Category</label>
+<select id="item-category" name="item-category" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm pr-8">
+<option>Electronics</option>
+<option>Office Equipment</option>
+<option>Audio/Visual</option>
+<option>Computer Accessories</option>
+<option>Other</option>
+</select>
+</div>
+<div>
+<label for="item-quantity" class="block text-sm font-medium text-gray-700">Quantity</label>
+<input type="number" name="item-quantity" id="item-quantity" min="1" class="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+</div>
+<div>
+<label for="item-department" class="block text-sm font-medium text-gray-700">CHED Department</label>
+<select id="item-department" name="item-department" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm pr-8">
+<option>Computer Science</option>
+<option>Engineering</option>
+<option>Business Administration</option>
+<option>Education</option>
+<option>Arts and Sciences</option>
+</select>
+</div>
+<div>
+<label for="item-description" class="block text-sm font-medium text-gray-700">Description</label>
+<textarea id="item-description" name="item-description" rows="3" class="mt-1 focus:ring-primary focus:border-primary block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"></textarea>
+</div>
+</form>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+<button type="button" id="add-item-submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:ml-3 sm:w-auto sm:text-sm whitespace-nowrap">
+Add Item
+</button>
+<button type="button" id="add-item-cancel" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm whitespace-nowrap">
+Cancel
+</button>
+</div>
+</div>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+// Authentication page switching
+const authPage = document.getElementById('auth-page');
+const registerPage = document.getElementById('register-page');
+const userDashboard = document.getElementById('user-dashboard');
+const adminDashboard = document.getElementById('admin-dashboard');
+const registerLink = document.getElementById('register-link');
+const loginLink = document.getElementById('login-link');
+const userTab = document.getElementById('user-tab');
+const adminTab = document.getElementById('admin-tab');
+const loginForm = document.getElementById('login-form');
+const registerForm = document.getElementById('register-form');
+const userLogout = document.getElementById('user-logout');
+const adminLogout = document.getElementById('admin-logout');
+registerLink.addEventListener('click', function(e) {
+e.preventDefault();
+authPage.classList.add('hidden');
+registerPage.classList.remove('hidden');
+});
+loginLink.addEventListener('click', function(e) {
+e.preventDefault();
+registerPage.classList.add('hidden');
+authPage.classList.remove('hidden');
+});
+userTab.addEventListener('click', function() {
+userTab.classList.add('tab-active');
+userTab.classList.remove('text-gray-500');
+adminTab.classList.remove('tab-active');
+adminTab.classList.add('text-gray-500');
+});
+adminTab.addEventListener('click', function() {
+adminTab.classList.add('tab-active');
+adminTab.classList.remove('text-gray-500');
+userTab.classList.remove('tab-active');
+userTab.classList.add('text-gray-500');
+});
+function validateForm() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const errorDiv = document.getElementById('sign-in-error');
+  
+  if (!email || !password) {
+    errorDiv.textContent = 'Please fill in all fields';
+    errorDiv.classList.remove('hidden');
+    return false;
+  }
+  
+  if (!email.includes('@')) {
+    errorDiv.textContent = 'Please enter a valid email address';
+    errorDiv.classList.remove('hidden');
+    return false;
+  }
+  
+  errorDiv.classList.add('hidden');
+  return true;
+}
+function setLoadingState(loading) {
+  const button = document.getElementById('sign-in-button');
+  const spinner = document.getElementById('sign-in-spinner');
+  const text = document.getElementById('sign-in-text');
+  
+  button.disabled = loading;
+  if (loading) {
+    spinner.classList.remove('hidden');
+    text.textContent = 'Signing in...';
+  } else {
+    spinner.classList.add('hidden');
+    text.textContent = 'Sign in';
+  }
+}
+function simulateAuth(email, password, rememberMe) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      // Simulate authentication check
+      if (email === 'admin@example.com' && password === 'admin123') {
+        resolve('admin');
+      } else if (email === 'user@example.com' && password === 'user123') {
+        resolve('user');
+      } else {
+        reject(new Error('Invalid email or password'));
+      }
+    }, 1500);
+  });
+}
+loginForm.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  if (!validateForm()) return;
+  
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const rememberMe = document.querySelector('input[type="checkbox"]').checked;
+  const errorDiv = document.getElementById('sign-in-error');
+  
+  setLoadingState(true);
+  
+  try {
+    const userType = await simulateAuth(email, password, rememberMe);
+    
+    if (rememberMe) {
+      localStorage.setItem('rememberedEmail', email);
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('userType', userType);
+    }
+    
+    // Smooth transition
+    document.body.style.opacity = '0';
+    setTimeout(() => {
+      if (userType === 'admin') {
+        authPage.classList.add('hidden');
+        adminDashboard.classList.remove('hidden');
+      } else {
+        authPage.classList.add('hidden');
+        userDashboard.classList.remove('hidden');
+      }
+      document.body.style.opacity = '1';
+    }, 300);
+    
+  } catch (error) {
+    errorDiv.textContent = error.message;
+    errorDiv.classList.remove('hidden');
+  } finally {
+    setLoadingState(false);
+  }
+});
+// Check for remembered login
+document.addEventListener('DOMContentLoaded', function() {
+  const rememberedEmail = localStorage.getItem('rememberedEmail');
+  const isLoggedIn = localStorage.getItem('isLoggedIn');
+  const userType = localStorage.getItem('userType');
+  
+  if (rememberedEmail) {
+    document.getElementById('email').value = rememberedEmail;
+    document.querySelector('input[type="checkbox"]').checked = true;
+  }
+  
+  if (isLoggedIn === 'true' && userType) {
+    if (userType === 'admin') {
+      authPage.classList.add('hidden');
+      adminDashboard.classList.remove('hidden');
+    } else {
+      authPage.classList.add('hidden');
+      userDashboard.classList.remove('hidden');
+    }
+  }
+});
+registerForm.addEventListener('submit', function(e) {
+e.preventDefault();
+registerPage.classList.add('hidden');
+userDashboard.classList.remove('hidden');
+});
+if (userLogout) {
+userLogout.addEventListener('click', function(e) {
+e.preventDefault();
+userDashboard.classList.add('hidden');
+authPage.classList.remove('hidden');
+});
+}
+if (adminLogout) {
+adminLogout.addEventListener('click', function(e) {
+e.preventDefault();
+adminDashboard.classList.add('hidden');
+authPage.classList.remove('hidden');
+});
+}
+});
+document.addEventListener('DOMContentLoaded', function() {
+// User dropdown toggle
+const userMenuButton = document.getElementById('user-menu-button');
+const userDropdown = document.getElementById('user-dropdown');
+if (userMenuButton && userDropdown) {
+userMenuButton.addEventListener('click', function() {
+userDropdown.classList.toggle('hidden');
+});
+// Close the dropdown when clicking outside
+document.addEventListener('click', function(event) {
+if (!userMenuButton.contains(event.target) && !userDropdown.contains(event.target)) {
+userDropdown.classList.add('hidden');
+}
+});
+}
+// Admin dropdown toggle
+const adminMenuButton = document.getElementById('admin-menu-button');
+const adminDropdown = document.getElementById('admin-dropdown');
+if (adminMenuButton && adminDropdown) {
+adminMenuButton.addEventListener('click', function() {
+adminDropdown.classList.toggle('hidden');
+});
+// Close the dropdown when clicking outside
+document.addEventListener('click', function(event) {
+if (!adminMenuButton.contains(event.target) && !adminDropdown.contains(event.target)) {
+adminDropdown.classList.add('hidden');
+}
+});
+}
+});
+document.addEventListener('DOMContentLoaded', function() {
+// User dashboard tabs
+const userTabBtns = document.querySelectorAll('.user-tab-btn');
+const userTabContents = document.querySelectorAll('.user-tab-content');
+userTabBtns.forEach(btn => {
+btn.addEventListener('click', function() {
+const tabName = this.getAttribute('data-tab');
+// Hide all tab contents
+userTabContents.forEach(content => {
+content.classList.add('hidden');
+});
+// Show selected tab content
+document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+// Update active tab button
+userTabBtns.forEach(btn => {
+btn.classList.remove('border-primary', 'text-primary');
+btn.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+});
+this.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+this.classList.add('border-primary', 'text-primary');
+});
+});
+});
+document.addEventListener('DOMContentLoaded', function() {
+// Admin dashboard tabs
+const adminNavLinks = document.querySelectorAll('.admin-nav-link');
+const adminTabContents = document.querySelectorAll('.admin-tab-content');
+const adminHeader = document.querySelector('header h1');
+adminNavLinks.forEach(link => {
+link.addEventListener('click', function(e) {
+e.preventDefault();
+const tabName = this.getAttribute('data-tab');
+// Hide all tab contents
+adminTabContents.forEach(content => {
+content.classList.add('hidden');
+});
+// Show selected tab content
+document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+// Update active nav link
+adminNavLinks.forEach(link => {
+link.classList.remove('text-primary', 'bg-primary/5');
+link.classList.add('text-gray-600', 'hover:bg-gray-50');
+});
+this.classList.remove('text-gray-600', 'hover:bg-gray-50');
+this.classList.add('text-primary', 'bg-primary/5');
+// Update header title
+if (adminHeader) {
+const title = this.textContent.trim();
+document.querySelector('header h1').textContent = title;
+}
+});
+});
+});
+document.addEventListener('DOMContentLoaded', function() {
+// Add item modal
+const addItemBtn = document.getElementById('add-item-btn');
+const addItemModal = document.getElementById('add-item-modal');
+const addItemCancel = document.getElementById('add-item-cancel');
+const addItemSubmit = document.getElementById('add-item-submit');
+const addItemForm = document.getElementById('add-item-form');
+if (addItemBtn && addItemModal) {
+addItemBtn.addEventListener('click', function() {
+addItemModal.classList.remove('hidden');
+});
+addItemCancel.addEventListener('click', function() {
+addItemModal.classList.add('hidden');
+});
+addItemSubmit.addEventListener('click', function() {
+// Here you would normally submit the form data
+addItemModal.classList.add('hidden');
+// You could show a success message or update the table
+});
+// Close modal when clicking outside
+addItemModal.addEventListener('click', function(event) {
+if (event.target === addItemModal) {
+addItemModal.classList.add('hidden');
+}
+});
+}
+});
+document.addEventListener('DOMContentLoaded', function() {
+// Initialize charts for admin dashboard
+if (document.getElementById('department-chart')) {
+const departmentChart = echarts.init(document.getElementById('department-chart'));
+const departmentOption = {
+animation: false,
+tooltip: {
+trigger: 'axis',
+axisPointer: {
+type: 'shadow'
+},
+backgroundColor: 'rgba(255, 255, 255, 0.9)',
+borderColor: '#e2e8f0',
+borderWidth: 1,
+textStyle: {
+color: '#1f2937'
+}
+},
+grid: {
+left: '3%',
+right: '4%',
+bottom: '3%',
+containLabel: true
+},
+xAxis: {
+type: 'category',
+data: ['Computer Science', 'Engineering', 'Business', 'Education', 'Arts & Sciences'],
+axisLabel: {
+color: '#1f2937'
+}
+},
+yAxis: {
+type: 'value',
+axisLabel: {
+color: '#1f2937'
+}
+},
+series: [
+{
+name: 'Items Borrowed',
+type: 'bar',
+data: [28, 15, 12, 9, 18],
+itemStyle: {
+color: 'rgba(87, 181, 231, 1)',
+borderRadius: 4
+}
+}
+]
+};
+departmentChart.setOption(departmentOption);
+window.addEventListener('resize', function() {
+departmentChart.resize();
+});
+}
+if (document.getElementById('items-chart')) {
+const itemsChart = echarts.init(document.getElementById('items-chart'));
+const itemsOption = {
+animation: false,
+tooltip: {
+trigger: 'item',
+backgroundColor: 'rgba(255, 255, 255, 0.9)',
+borderColor: '#e2e8f0',
+borderWidth: 1,
+textStyle: {
+color: '#1f2937'
+}
+},
+legend: {
+top: 'bottom',
+left: 'center',
+textStyle: {
+color: '#1f2937'
+}
+},
+series: [
+{
+name: 'Borrowed Items',
+type: 'pie',
+radius: ['40%', '70%'],
+avoidLabelOverlap: false,
+itemStyle: {
+borderRadius: 6,
+borderColor: '#fff',
+borderWidth: 2
+},
+label: {
+show: false,
+position: 'center'
+},
+emphasis: {
+label: {
+show: true,
+fontSize: '14',
+fontWeight: 'bold'
+}
+},
+labelLine: {
+show: false
+},
+data: [
+{ value: 35, name: 'Laptops', itemStyle: { color: 'rgba(87, 181, 231, 1)' } },
+{ value: 22, name: 'Projectors', itemStyle: { color: 'rgba(141, 211, 199, 1)' } },
+{ value: 18, name: 'Speakers', itemStyle: { color: 'rgba(251, 191, 114, 1)' } },
+{ value: 15, name: 'Cameras', itemStyle: { color: 'rgba(252, 141, 98, 1)' } }
+]
+}
+]
+};
+itemsChart.setOption(itemsOption);
+window.addEventListener('resize', function() {
+itemsChart.resize();
+});
+}
+});
+</script>
+</body>
+</html>
